@@ -21,57 +21,17 @@ app.use(express.static('public'));
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({extended: true}))
 
+const articleRoutes = require('./routes/article');
 
-// create db connection
-var con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "qwerty",
-    database: "joga_mysql"
-})
+app.use('/', articleRoutes)
+app.use('/article', articleRoutes)
 
-con.connect(function (err){
-    if (err) throw err
-    console.log("Connected to joga_mysql db");
-})
-
-// show all articles - index page
-app.get('/', (req, res) => {
-    let query = "SELECT * FROM article";
-    let articles = []
-    con.query(query, (err, result) => {
-        if (err) throw err;
-        articles = result
-        res.render('index', {
-            articles: articles
-        })
-    })
-})
-//show article by this slug
-app.get('/article/:slug', (req, res) => {
-    let query = `SELECT article.*, author.name AS authorName FROM article INNER JOIN author ON article.author_id = author.id WHERE slug="${req.params.slug}"`
-    let article
-    con.query(query, (err, result) => {
-        if (err) throw err;
-        article = result;
-        console.log(article)
-        res.render('article', {
-            article: article
-        })
-    });
-});
 
 // show articles by author
 app.get('/author/:id', (req, res) => {
-    let authorQuery = `SELECT name FROM author WHERE id = ${req.params.id}`
-    let author
-    let articlesQuery = `SELECT * FROM article WHERE author_id = ${req.params.id}`
+    let query = `SELECT * FROM article WHERE author_id ="${req.params.author_id}"`
     let articles
-    con.query(articlesQuery, (err, result) => {
-        if (err) throw err;
-        articles = result
-    })
-    con.query(authorQuery, (err, result) => {
+    con.query(query, (err, result) => {
         if (err) throw err;
         author = result
         res.render('author', {
